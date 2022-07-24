@@ -1,0 +1,20 @@
+{
+  "name": "blur-canvas",
+  "version": "1.0.0",
+  "description": "Example for blur image erase",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevsHorse/erase-blur-image.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevsHorse/erase-blur-image/issues"
+  },
+  "homepage": "https://github.com/DevsHorse/erase-blur-image#readme"
+}
