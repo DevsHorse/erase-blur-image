@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/DevsHorse/erase-blur-image/issues"
   },
-  "homepage": "https://github.com/DevsHorse/erase-blur-image#readme"
+  "homepage": "https://github.com/DevsHorse/erase-blur-image#readme",
+  "devDependencies": {
+    "parcel": "^2.6.2"
+  }
 }

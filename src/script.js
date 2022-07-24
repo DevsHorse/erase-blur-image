@@ -1,4 +1,4 @@
 import asset from './assets/2.jpeg';
-import blurImage from './blurImage';
+import ImageBlurEraser from './ImageBlurEraserCore';
 
-blurImage(asset)
+new ImageBlurEraser(asset).init();
