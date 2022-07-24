@@ -1,58 +1,76 @@
 
 
 export default class Mouse {
-  constructor(canvasMouseCallBack) {
+  constructor() {
+    this.interfaceId = 0;
     this.x = 0;
     this.y = 0;
     this.w = 0;
     this.alt = false;
     this.shift = false;
     this.ctrl = false;
-    this.interfaceId = 0;
+    this.over = false;
     this.buttonLastRaw = 0;
     this.buttonRaw = 0;
-    this.over = false;
     this.bm = [1, 2, 4, 6, 5, 3];
     this.mouseEvents = "mousemove,mousedown,mouseup,mouseout,mouseover,mousewheel,DOMMouseScroll".split(",");
-    this.canvasMouseCallBack = canvasMouseCallBack;
-    this.mouseMove = this.mouseMove.bind(this);
-    this.mouseStart = this.mouseStart.bind(this);
-    this.removeMouse = this.removeMouse.bind(this);
+    this.element;
+    this.mouseEvent = this.mouseEvent.bind(this);
+    this.initListeners = this.initListeners.bind(this);
+    this.removeListeners = this.removeListeners.bind(this);
   }
 
   getInterfaceId() {
     return this.interfaceId++;
   }
 
-  mouseMove(e) {
-    let t = e.type; 
-    let m = this;
-    m.x = e.offsetX; m.y = e.offsetY;
-    if (m.x === undefined) { m.x = e.clientX; m.y = e.clientY; }
-    m.alt = e.altKey;m.shift = e.shiftKey;m.ctrl = e.ctrlKey;
-    if (t === "mousedown") { m.buttonRaw |= m.bm[e.which-1];
-    } else if (t === "mouseup") { m.buttonRaw &= m.bm[e.which + 2];
-    } else if (t === "mouseout") { m.buttonRaw = 0; m.over = false;
-    } else if (t === "mouseover") { m.over = true;
-    } else if (t === "mousewheel") { m.w = e.wheelDelta;
-    } else if (t === "DOMMouseScroll") { m.w = -e.detail;}
-    if (this.canvasMouseCallBack) { this.canvasMouseCallBack(this); }
+  mouseEvent(e) {
+    let type = e.type; 
+    this.x = e.offsetX; this.y = e.offsetY;
+    if (this.x === undefined) { 
+      this.x = e.clientX; this.y = e.clientY; 
+    }
+    this.alt = e.altKey;
+    this.shift = e.shiftKey;
+    this.ctrl = e.ctrlKey;
+
+    switch (type) {
+      case 'mousedown': 
+        this.buttonRaw |= this.bm[e.which-1];
+        break;
+      case 'mouseup': 
+        this.buttonRaw &= this.bm[e.which + 2];
+        break;
+      case 'mouseout':
+        this.buttonRaw = 0; this.over = false;
+        break;
+      case 'mouseover':
+        this.over = true;
+        break;
+      case 'mousewheel':
+        this.w = e.wheelDelta;
+        break;
+      case 'DOMMouseScroll':
+        this.w = -e.detail;
+    }
     e.preventDefault();
   }
 
-  mouseStart(element) {
+  /**
+   * @param {canvas || undefined} element 
+   */
+  initListeners(element) {
     if(element === undefined){
       element = document;
     }
     this.element = element;
-    this.mouseEvents.forEach((n) => this.element.addEventListener(n, this.mouseMove));
+    this.mouseEvents.forEach((n) => this.element.addEventListener(n, this.mouseEvent));
     this.element.addEventListener("contextmenu", function (e) {e.preventDefault();}, false);
   }
 
-  removeMouse() {
+  removeListeners() {
     if(this.element !== undefined){
-      this.mouseEvents.forEach((n) => this.element.removeEventListener(n, this.mouseMove));
-      this.canvasMouseCallBack = undefined;
+      this.mouseEvents.forEach((n) => this.element.removeEventListener(n, this.mouseEvent));
     }
   }
 }

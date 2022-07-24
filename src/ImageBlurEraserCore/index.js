@@ -16,6 +16,7 @@ export default class ImageBlurEraser {
     this.entryImageBlur;
     this.mouse;
     this.canvas;
+    this.canvasElement;
     this.ctx;
     this.stop = false;
     this.init = this.init.bind(this);
@@ -28,7 +29,7 @@ export default class ImageBlurEraser {
     const waitForStopped = () => {
       if (!this.stop) { // wait for stop to return to false
         this.start();
-          return;
+        return;
       }
       setTimeout(waitForStopped, 200);
     }
@@ -42,26 +43,22 @@ export default class ImageBlurEraser {
   }
 
   start() {
-    if (this.canvas) {
+    if (this.canvasElement) {
+      this.canvasElement = null;
       this.canvas = null;
     }
      /** fullScreenCanvas.js begin **/
-     this.canvas = new Canvas().initCanvas();
-     this.ctx = this.canvas.ctx;
+     this.canvas = new Canvas('#root')
+     this.canvasElement = this.canvas.initCanvas();
+     this.ctx = this.canvasElement.ctx;
      /** fullScreenCanvas.js end **/
      
      /** MouseFull.js begin **/
-     if(typeof this.mouse !== "undefined"){  // if the mouse exists 
-         if( this.mouse.removeMouse !== undefined){
-             this.mouse.removeMouse(); // remove previouse events
-         }
-     }else{
-         this.mouse = undefined;
-     }
-
-     const canvasMouseCallBack = undefined;  // if needed
-     this.mouse = new Mouse(canvasMouseCallBack);
-     this.mouse.mouseStart(this.canvas || undefined);
+     if (this.mouse instanceof Mouse) {
+        this.mouse.removeListeners();
+     } 
+     this.mouse = new Mouse();
+     this.mouse.initListeners(this.canvasElement || undefined);
      /** MouseFull.js end **/
      
      // load the images and create the mask
@@ -69,7 +66,7 @@ export default class ImageBlurEraser {
          this.imageLoadedCount = 0;
          this.error = false;
          this.maskImage;
-         console.log(this);
+
          this.entryImage= imageTools.loadImage(this.imageUrl, event => {
              if (event.type === "load") {
                  this.imageLoadedCount += 1;
@@ -88,7 +85,7 @@ export default class ImageBlurEraser {
          })
      }
 
-      const settings = Utils.createAnimationSettings(this.canvas);
+      const settings = Utils.createAnimationSettings(this.canvasElement);
       // update function will try 60fps but setting will slow this down. 
       const animation = Utils.injectAnimationSettings(settings, this.animationUpdate);
       animation();
@@ -101,13 +98,13 @@ export default class ImageBlurEraser {
     if (this.imageLoadedCount === 2) {
         // draw the unblured image that will appear at the top
         this.ctx.globalCompositeOperation = "source-over";
-        Canvas.drawImageCentered(this.ctx, this.entryImageBlur, this.canvas, true);
+        Canvas.drawImageCentered(this.ctx, this.entryImageBlur, this.canvasElement, true);
         // Mask out the parts when the mask image has pixels
         this.ctx.globalCompositeOperation = "destination-out";
-        Canvas.drawImageCentered(this.ctx, this.maskImage, this.canvas, true);
+        Canvas.drawImageCentered(this.ctx, this.maskImage, this.canvasElement, true);
         // draw the blured image only where the destination has been masked
         this.ctx.globalCompositeOperation = "destination-atop";
-        Canvas.drawImageCentered(this.ctx, this.entryImage, this.canvas);
+        Canvas.drawImageCentered(this.ctx, this.entryImage, this.canvasElement);
         
         settings.blurMaskFadeCounter += 1;
         if((settings.blurMaskFadeCounter % settings.blurMaskFadeRate) === 0){
@@ -152,10 +149,7 @@ export default class ImageBlurEraser {
     if(!this.stop){
         requestAnimationFrame(Utils.injectAnimationSettings(settings, this.animationUpdate));
     }else{
-        var can = document.getElementById("canv");
-        if(can !== null){
-            document.body.removeChild(can);
-        }        
+        this.canvas.removeCanvasFromDocument();       
         this.stop = false;
     }
   }
